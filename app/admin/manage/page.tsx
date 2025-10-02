@@ -318,7 +318,7 @@ export default function ManageStructurePage() {
       await setDoc(yearRef, data);
 
       toast.success("Year added successfully!");
-      setYears([...years, { ...data, id, subjects: [] }]);
+      setYears([...years, { ...data, id }]);
       handleYearDialogChange(false);
     } catch (error) {
       console.error("Error adding year: ", error);
@@ -338,7 +338,7 @@ export default function ManageStructurePage() {
       await setDoc(subjectRef, data);
 
       toast.success("Subject added successfully!");
-      setSubjects([...subjects, { ...data, id, chapters: [] }]);
+      setSubjects([...subjects, { ...data, id }]);
       handleSubjectDialogChange(false);
     } catch (error) {
       console.error("Error adding subject: ", error);

@@ -21,6 +21,7 @@ export interface Subject {
   description: string;
   icon: string;
   order: number;
+  chapters?: Chapter[];
 }
 
 export interface Year {
@@ -29,6 +30,7 @@ export interface Year {
   description: string;
   icon: string;
   order: number;
+  subjects?: Subject[];
 }
 
 export interface Course {
@@ -37,4 +39,5 @@ export interface Course {
   description: string;
   icon: string;
   order: number;
+  years?: Year[];
 } 
