@@ -2,11 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationCard from "@/components/NavigationCard";
 import { useState, useEffect } from "react";
-import DeveloperProfile from "@/components/DeveloperProfile";
 import { collection, doc, getDoc, getDocs, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Chapter, Subject } from "@/types";
@@ -17,7 +16,6 @@ export default function ChaptersPage() {
   const courseId = params.courseId as string;
   const yearId = params.yearId as string;
   const subjectId = params.subjectId as string;
-  const [showProfile, setShowProfile] = useState(false);
   const [subject, setSubject] = useState<Subject | null>(null);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +126,6 @@ export default function ChaptersPage() {
         )}
       </main>
 
-      <DeveloperProfile isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 } 
