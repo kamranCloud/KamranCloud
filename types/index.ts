@@ -10,7 +10,7 @@ export interface Content {
 export interface Chapter {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   order: number;
   content: Content[];
 }
@@ -18,8 +18,8 @@ export interface Chapter {
 export interface Subject {
   id: string;
   name: string;
-  description: string;
-  icon: string;
+  description?: string;
+  icon?: string;
   order: number;
   chapters?: Chapter[];
 }
@@ -27,8 +27,8 @@ export interface Subject {
 export interface Year {
   id: string;
   name: string;
-  description: string;
-  icon: string;
+  description?: string;
+  icon?: string;
   order: number;
   subjects?: Subject[];
 }
@@ -36,7 +36,7 @@ export interface Year {
 export interface Course {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   icon: string;
   order: number;
   years?: Year[];
