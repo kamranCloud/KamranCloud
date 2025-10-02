@@ -2,11 +2,10 @@
 
 import { motion } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationCard from "@/components/NavigationCard";
 import { useState, useEffect } from "react";
-import DeveloperProfile from "@/components/DeveloperProfile";
 import { collection, doc, getDoc, getDocs, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Subject, Year } from "@/types";
@@ -16,7 +15,6 @@ export default function SubjectsPage() {
   const params = useParams();
   const courseId = params.courseId as string;
   const yearId = params.yearId as string;
-  const [showProfile, setShowProfile] = useState(false);
   const [year, setYear] = useState<Year | null>(null);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,14 +88,6 @@ export default function SubjectsPage() {
           
           <h1 className="text-2xl font-bold text-foreground">{year.name} - Select Subject</h1>
           
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-full"
-            onClick={() => setShowProfile(true)}
-          >
-            <User className="w-5 h-5" />
-          </Button>
         </div>
       </header>
 
@@ -133,7 +123,6 @@ export default function SubjectsPage() {
         )}
       </main>
 
-      <DeveloperProfile isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 } 

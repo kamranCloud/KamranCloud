@@ -2,18 +2,16 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NavigationCard from "@/components/NavigationCard";
 import { useState, useEffect } from "react";
-import DeveloperProfile from "@/components/DeveloperProfile";
 import { collection, getDocs, QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Course } from "@/types";
 
 export default function CoursesPage() {
   const router = useRouter();
-  const [showProfile, setShowProfile] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -55,14 +53,6 @@ export default function CoursesPage() {
             Select Course
           </h1>
           
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full hover:bg-primary/10"
-            onClick={() => setShowProfile(true)}
-          >
-            <User className="w-5 h-5" />
-          </Button>
         </div>
       </header>
 
@@ -91,7 +81,6 @@ export default function CoursesPage() {
         )}
       </main>
 
-      <DeveloperProfile isOpen={showProfile} onClose={() => setShowProfile(false)} />
     </div>
   );
 } 
