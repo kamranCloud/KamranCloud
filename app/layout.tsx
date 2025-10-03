@@ -9,9 +9,11 @@ import { AuthProvider } from "@/components/providers/auth-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 import DeveloperProfile from "@/components/DeveloperProfile";
+import Link from "next/link";
+import { BookOpen } from "lucide-react";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const poppins = Poppins({
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const poppins = Poppins({ 
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-poppins",
@@ -30,22 +32,37 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} ${poppins.variable} antialiased`}>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          inter.variable,
+          poppins.variable
+        )}
+      >
         <ThemeProvider
           attribute="class"
           defaultTheme="light"
-          enableSystem={false}
+          enableSystem
           disableTransitionOnChange
         >
           <QueryProvider>
             <AuthProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <header className="sticky top-0 z-50 w-full border-b bg-background">
+                <div className="container h-14 flex items-center justify-between">
+                  <Link href="/" className="flex items-center space-x-2">
+                    <BookOpen className="h-6 w-6 text-blue-600" />
+                    <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-red-500 bg-clip-text text-transparent">
+                      Dr. Kamran's Cloud
+                    </span>
+                  </Link>
+                  <DeveloperProfile />
+                </div>
+              </header>
+              <main>{children}</main>
+              <Toaster />
             </AuthProvider>
-            <Toaster />
-            <Sonner />
           </QueryProvider>
         </ThemeProvider>
-        <DeveloperProfile />
       </body>
     </html>
   );

@@ -56,23 +56,6 @@ export default function Home() {
         />
       </div>
 
-      {/* Header */}
-      <header className="relative z-10 p-6">
-        <div className="container mx-auto flex justify-between items-center">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex items-center gap-2"
-          >
-            <BookOpen className="w-8 h-8 text-primary" />
-            <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-              Kamran's Cloud
-            </span>
-          </motion.div>
-          
-        </div>
-      </header>
-
       {/* Hero Section */}
       <main className="relative z-10 container mx-auto px-6 pt-12 pb-20">
         <div className="max-w-6xl mx-auto">

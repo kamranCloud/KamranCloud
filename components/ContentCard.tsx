@@ -95,7 +95,7 @@ const ContentCard = ({ content, delay = 0 }: ContentCardProps) => {
           </div>
         )}
       </div>
-      
+
       <div className="flex-1 p-4 flex flex-col">
         <h4 className="font-bold text-md text-foreground mb-2 flex-1 line-clamp-2 group-hover:text-primary transition-smooth">
           {content.title}

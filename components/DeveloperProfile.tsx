@@ -12,8 +12,10 @@ import { Button } from "./ui/button";
 import { Heart, Github, Linkedin, Instagram, Mail, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const DeveloperProfile = () => {
+  const isMobile = useIsMobile();
   const socialLinks = [
     {
       href: "https://github.com/iamaako",
@@ -37,10 +39,10 @@ const DeveloperProfile = () => {
       <DialogTrigger asChild>
         <Button
           variant="default"
-          className="fixed top-4 right-4 bg-black text-white hover:bg-gray-800 shadow-lg flex items-center z-50"
+          className="bg-black text-white hover:bg-gray-800 shadow-lg flex items-center"
         >
-          <span className="mr-2 pointer-events-none">Developed by Aarif Khan</span>
-          <Heart className="w-5 h-5 text-red-500 fill-current pointer-events-none" />
+          {!isMobile && <span className="mr-2 pointer-events-none text-sm font-medium">Developer</span>}
+          <Heart className="w-4 h-4 text-red-500 fill-current pointer-events-none" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

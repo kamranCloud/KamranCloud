@@ -212,8 +212,15 @@ export default function UploadNotesPage() {
             body: JSON.stringify({ role: 'reader', type: 'anyone' }),
           });
 
-          const shareableUrl = `https://drive.google.com/file/d/${fileId}/view`;
-          setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'completed', progress: 100, uploadedUrl: shareableUrl } : f));
+          // Set file permissions to public
+          await fetch('/api/google-set-public', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileId }),
+          });
+
+          const uploadedUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
+          setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'completed', progress: 100, uploadedUrl: uploadedUrl } : f));
           break; // Exit while loop
         }
       }
