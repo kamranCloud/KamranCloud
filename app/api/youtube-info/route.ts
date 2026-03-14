@@ -31,7 +31,7 @@ function detectYouTubeType(url: string): { type: 'video' | 'playlist'; id: strin
     }
     
     return null;
-  } catch (error) {
+  } catch {
     return null;
   }
 }
@@ -88,12 +88,13 @@ export async function POST(request: NextRequest) {
       thumbnail: thumbnail,
       author: data.author_name,
     });
-  } catch (error: any) {
-    console.error('YouTube info error:', error.message);
+  } catch (error: unknown) {
+    const err = error as { message?: string };
+    console.error('YouTube info error:', err.message);
     return NextResponse.json(
       { 
         error: 'Failed to fetch YouTube details',
-        details: error.message 
+        details: err.message 
       },
       { status: 500 }
     );

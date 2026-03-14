@@ -41,7 +41,7 @@ export default function SubjectsPage() {
           id: doc.id,
           ...doc.data(),
         })) as Subject[];
-        subjectList.sort((a: any, b: any) => (a.order ?? 999) - (b.order ?? 999));
+        subjectList.sort((a: Subject, b: Subject) => (a.order ?? 999) - (b.order ?? 999));
         setSubjects(subjectList);
 
       } catch (error) {

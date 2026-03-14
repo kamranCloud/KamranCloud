@@ -2,10 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 import { getAccessToken } from '@/lib/google-tokens';
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
-const GOOGLE_REFRESH_TOKEN = process.env.GOOGLE_REFRESH_TOKEN;
-
 // Find or create folder in Google Drive
 async function findOrCreateFolder(
   accessToken: string,
@@ -30,7 +26,7 @@ async function findOrCreateFolder(
     }
 
     // Create new folder
-    const metadata: any = {
+    const metadata: Record<string, string | string[]> = {
       name: folderName,
       mimeType: 'application/vnd.google-apps.folder',
     };
@@ -106,12 +102,13 @@ export async function POST(request: NextRequest) {
       uploadUrl: uploadUrl,
       accessToken: accessToken,
     });
-  } catch (error: any) {
-    console.error('Upload initialization error:', error.response?.data || error.message);
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown }; message?: string };
+    console.error('Upload initialization error:', err.response?.data || err.message);
     return NextResponse.json(
       { 
         error: 'Failed to initialize upload',
-        details: error.response?.data || error.message 
+        details: err.response?.data || err.message 
       },
       { status: 500 }
     );

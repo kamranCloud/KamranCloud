@@ -17,7 +17,7 @@ export default function AdminPage() {
       await signOut(auth);
       toast.success("Logged out successfully.");
       router.push("/login");
-    } catch (error) {
+    } catch {
       toast.error("Failed to log out.");
     }
   };

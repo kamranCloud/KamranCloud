@@ -24,7 +24,7 @@ export default function CoursesPage() {
           id: doc.id,
           ...doc.data(),
         })) as Course[];
-        courseList.sort((a: any, b: any) => (a.order ?? 999) - (b.order ?? 999));
+        courseList.sort((a: Course, b: Course) => (a.order ?? 999) - (b.order ?? 999));
         setCourses(courseList);
       } catch (error) {
         console.error("Error fetching courses: ", error);

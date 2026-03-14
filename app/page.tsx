@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { User, BookOpen, Video, FileText, Sparkles, ArrowRight, GraduationCap } from "lucide-react";
+import { Video, FileText, Sparkles, ArrowRight, GraduationCap } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
@@ -186,7 +186,7 @@ export default function Home() {
       <footer className="relative z-10 py-8 border-t border-border/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 text-center">
           <p className="text-muted-foreground">
-            © 2024 Kamran's Cloud. Empowering minds through education.
+            © 2024 Kamran&apos;s Cloud. Empowering minds through education.
           </p>
         </div>
       </footer>

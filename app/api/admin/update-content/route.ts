@@ -39,13 +39,13 @@ export async function POST(request: NextRequest) {
     const oldContent = Array.isArray(oldChapterSnap.data()?.content) ? oldChapterSnap.data()?.content : [];
     const newContent = Array.isArray(newChapterSnap.data()?.content) ? newChapterSnap.data()?.content : [];
 
-    const removedFromOld = oldContent.filter((item: any) => item.id !== originalContentId);
+    const removedFromOld = oldContent.filter((item: { id: string }) => item.id !== originalContentId);
 
     if (originalLocation.courseId === newLocation.courseId &&
         originalLocation.yearId === newLocation.yearId &&
         originalLocation.subjectId === newLocation.subjectId &&
         originalLocation.chapterId === newLocation.chapterId) {
-      const replacedContent = oldContent.map((item: any) => item.id === originalContentId ? updatedContent : item);
+      const replacedContent = oldContent.map((item: { id: string }) => item.id === originalContentId ? updatedContent : item);
       await oldChapterRef.update({ content: replacedContent });
     } else {
       await Promise.all([
@@ -55,8 +55,9 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
     console.error('Error updating content:', error);
-    return NextResponse.json({ error: 'Failed to update content', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update content', details: err.message }, { status: 500 });
   }
 }

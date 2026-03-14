@@ -45,10 +45,11 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, count: pendingContents.length });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
     console.error('Error submitting content:', error);
     return NextResponse.json(
-      { error: 'Failed to submit content', details: error.message },
+      { error: 'Failed to submit content', details: err.message },
       { status: 500 }
     );
   }

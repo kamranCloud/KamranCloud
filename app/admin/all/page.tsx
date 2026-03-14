@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Search, Loader2, Edit, Trash, ExternalLink, MoreVertical, FileText } from "lucide-react";
+import { ArrowLeft, Search, Loader2, Edit, Trash, ExternalLink, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,12 +32,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
 import { Course, Year, Subject, Chapter, Content } from "@/types";
@@ -181,7 +175,7 @@ export default function AllContentPage() {
         const coursesData: Course[] = coursesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)).sort((a,b) => a.order - b.order);
         setCourses(coursesData);
         
-        let contentList: ContentWithLocation[] = [];
+        const contentList: ContentWithLocation[] = [];
         for (const course of coursesData) {
           const yearsSnapshot = await getDocs(collection(db, `courses/${course.id}/years`));
           for (const yearDoc of yearsSnapshot.docs) {
@@ -311,9 +305,10 @@ export default function AllContentPage() {
       // Update local state to reflect deletion
       setAllContent(prev => prev.filter(c => c.id !== deletingContent.id));
       toast.success("Content deleted successfully.");
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string };
       console.error("Error deleting content:", error);
-      toast.error(error.message);
+      toast.error(err.message || "Failed to delete content.");
     } finally {
       setDeletingContent(null);
     }
@@ -407,9 +402,10 @@ export default function AllContentPage() {
       toast.success("Content updated successfully!");
       setEditingContent(null);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string };
       console.error("Error updating content:", error);
-      toast.error(error.message || "Failed to update content.");
+      toast.error(err.message || "Failed to update content.");
     }
   }
 
@@ -510,7 +506,7 @@ export default function AllContentPage() {
           <DialogHeader>
             <DialogTitle>Edit Content</DialogTitle>
             <DialogDescription>
-               Update the content details and location. Click save when you're done.
+               Update the content details and location. Click save when you&apos;re done.
             </DialogDescription>
           </DialogHeader>
           {editingContent && (
@@ -572,7 +568,7 @@ export default function AllContentPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the content titled "{deletingContent?.title}".
+              This action cannot be undone. This will permanently delete the content titled &quot;{deletingContent?.title}&quot;.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -9,7 +9,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import Link from 'next/link';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -24,10 +23,11 @@ export default function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       toast.success("Logged in successfully! Redirecting to admin...");
       router.push('/admin');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || 'An error occurred');
       toast.error("Failed to log in", {
-        description: err.message,
+        description: error.message,
       });
     }
   };

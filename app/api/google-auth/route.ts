@@ -5,14 +5,15 @@ export async function GET() {
   try {
     const accessToken = await getAccessToken();
     return NextResponse.json({ accessToken });
-  } catch (error: any) {
-    console.error('Failed to get new access token:', error.response?.data || error.message);
+  } catch (error: unknown) {
+    const err = error as { response?: { data?: unknown }; message?: string };
+    console.error('Failed to get new access token:', err.response?.data || err.message);
     return NextResponse.json(
       { 
         error: 'Failed to refresh access token',
-        details: error.response?.data || error.message 
+        details: err.response?.data || err.message 
       },
       { status: 500 }
     );
   }
-} 
+}

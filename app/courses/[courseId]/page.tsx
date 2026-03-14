@@ -42,7 +42,7 @@ export default function YearsPage() {
           id: doc.id,
           ...doc.data(),
         })) as Year[];
-        yearList.sort((a: any, b: any) => (a.order ?? 999) - (b.order ?? 999));
+        yearList.sort((a: Year, b: Year) => (a.order ?? 999) - (b.order ?? 999));
         setYears(yearList);
 
       } catch (error) {

@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
-import { Heart, Github, Linkedin, Instagram, Mail, Phone } from "lucide-react";
+import { Heart, Github, Linkedin, Instagram } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -65,7 +65,7 @@ const DeveloperProfile = () => {
         </DialogHeader>
         <div className="py-4">
           <p className="text-center text-sm text-muted-foreground">
-            Hi, I'm Aarif Khan, a passionate developer creating modern web
+            Hi, I&apos;m Aarif Khan, a passionate developer creating modern web
             applications. Feel free to connect with me!
           </p>
           <p className="text-center text-sm font-medium mt-2">

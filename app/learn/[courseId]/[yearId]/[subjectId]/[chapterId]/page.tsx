@@ -2,10 +2,9 @@
 
 import { motion } from "framer-motion";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import DeveloperProfile from "@/components/DeveloperProfile";
 import ContentCard from "@/components/ContentCard";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -19,7 +18,6 @@ export default function LearningPage() {
   const subjectId = params.subjectId as string;
   const chapterId = params.chapterId as string;
   const [activeTab, setActiveTab] = useState<'videos' | 'notes'>('videos');
-  const [showProfile, setShowProfile] = useState(false);
   const [chapter, setChapter] = useState<Chapter | null>(null);
   const [loading, setLoading] = useState(true);
   

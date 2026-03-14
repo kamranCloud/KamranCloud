@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
@@ -52,7 +50,7 @@ export default function RootLayout({
                   <Link href="/" className="flex items-center space-x-2">
                     <BookOpen className="h-6 w-6 text-blue-600" />
                     <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-red-500 bg-clip-text text-transparent">
-                      Dr. Kamran's Cloud
+                      Dr. Kamran&apos;s Cloud
                     </span>
                   </Link>
                   <DeveloperProfile />

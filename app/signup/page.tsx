@@ -31,10 +31,11 @@ export default function SignUpPage() {
       await createUserWithEmailAndPassword(auth, email, password);
       toast.success("Account created successfully! Redirecting to admin...");
       router.push('/admin');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setError(error.message || 'An error occurred');
       toast.error("Failed to create account", {
-        description: err.message,
+        description: error.message,
       });
     }
   };

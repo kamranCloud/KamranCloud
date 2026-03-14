@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
       grant_type: 'authorization_code',
     });
 
-    const { access_token, refresh_token } = tokenResponse.data;
+    const { refresh_token } = tokenResponse.data;
 
     if (!refresh_token) {
       const html = `

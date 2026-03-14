@@ -234,8 +234,6 @@ export default function AddContentPage() {
     
     // If the content is a note and was just uploaded (check localStorage flag)
     if (contentToRemove && contentToRemove.type === 'notes' && contentToRemove.url.includes('drive.google.com')) {
-      const isRecentUpload = localStorage.getItem('uploadedFiles')?.includes(contentToRemove.id);
-      
       // A more robust check might be needed, but this is a good start.
       // Let's assume any note removed from this list before submission MIGHT be one to delete.
       try {
@@ -504,7 +502,7 @@ export default function AddContentPage() {
                         }}
                         className="text-sm text-primary hover:underline"
                       >
-                        Don't have URL? Upload file →
+                        Don&apos;t have URL? Upload file →
                       </button>
                     </div>
                   )}

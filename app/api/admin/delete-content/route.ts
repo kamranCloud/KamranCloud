@@ -29,8 +29,9 @@ export async function POST(request: NextRequest) {
           await axios.delete(`https://www.googleapis.com/drive/v3/files/${fileIdMatch[1]}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
-        } catch (driveError: any) {
-          console.warn('Could not delete file from Google Drive.', driveError.response?.data || driveError.message);
+        } catch (driveError: unknown) {
+          const driveErr = driveError as { response?: { data?: unknown }; message?: string };
+          console.warn('Could not delete file from Google Drive.', driveErr.response?.data || driveErr.message);
         }
       }
     }
@@ -47,13 +48,14 @@ export async function POST(request: NextRequest) {
     }
 
     const existingContent = Array.isArray(chapterSnap.data()?.content) ? chapterSnap.data()?.content : [];
-    const updatedContent = existingContent.filter((item: any) => item.id !== contentObject.id);
+    const updatedContent = existingContent.filter((item: { id: string }) => item.id !== contentObject.id);
 
     await chapterRef.update({ content: updatedContent });
 
     return NextResponse.json({ success: true, message: 'Content deleted successfully.' });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
     console.error('Error deleting content:', error);
-    return NextResponse.json({ error: 'Failed to delete content.', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete content.', details: err.message }, { status: 500 });
   }
 }

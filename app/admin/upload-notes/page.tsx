@@ -124,8 +124,9 @@ export default function UploadNotesPage() {
           throw new Error('Failed to delete file from Google Drive.');
         }
         toast.success(`"${fileToRemove.title}" was deleted from Google Drive.`);
-      } catch (error: any) {
-        toast.error(error.message);
+      } catch (error: unknown) {
+        const err = error as { message?: string };
+        toast.error(err.message || 'Failed to delete file.');
         // Don't block UI removal if API fails, as file might already be deleted
       }
     }
@@ -247,8 +248,9 @@ export default function UploadNotesPage() {
           return true;
         }
       }
-    } catch (err: any) {
-      setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'error', error: err.message } : f));
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'error', error: error.message || 'Upload failed' } : f));
       return false;
     }
 

@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { collection, getDocs, addDoc, doc, deleteDoc, updateDoc, setDoc, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, doc, deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Course, Year, Subject, Chapter } from "@/types";
 import { useForm } from "react-hook-form";
