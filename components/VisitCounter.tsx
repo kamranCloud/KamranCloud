@@ -1,47 +1,50 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import { Users, Loader2 } from "lucide-react";
 
 export default function VisitCounter() {
+    const [visits, setVisits] = useState<number | null>(null);
+
+    useEffect(() => {
+        let mounted = true;
+
+        const recordVisit = async () => {
+            try {
+                const hasVisited = sessionStorage.getItem("kamrans_cloud_visited");
+                let response;
+
+                if (!hasVisited) {
+                    // First time this session, increment the global counter
+                    response = await fetch('/api/visits', { method: 'POST' });
+                    if (response.ok) {
+                        sessionStorage.setItem("kamrans_cloud_visited", "true");
+                    }
+                } else {
+                    // Already visited, just fetch the current count to display
+                    response = await fetch('/api/visits', { method: 'GET' });
+                }
+
+                if (response?.ok && mounted) {
+                    const data = await response.json();
+                    setVisits(data.count);
+                }
+            } catch (error) {
+                console.error("Failed to load visit counter:", error);
+            }
+        };
+
+        recordVisit();
+
+        return () => {
+            mounted = false;
+        };
+    }, []);
+
     return (
-        <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="flex flex-col items-center justify-center"
-        >
-            {/* Hidden iframe to trigger the tracking logic without breaking Next.js hydration via document.write */}
-            <iframe
-                src="https://www.freevisitorcounters.com/auth.php?id=1f509f2c3add916c6ad965517f751ca13845693d"
-                style={{ display: "none" }}
-                title="Visitor Analytics"
-            />
-
-            {/* Extracted actual image counter to safely render in React */}
-            <a
-                href="https://www.freevisitorcounters.com/en/home/stats/id/1518168"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="View Profile Stats"
-            >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    src="https://www.freevisitorcounters.com/en/counter/render/1518168/t/5"
-                    alt="Visitor Counter"
-                    style={{ border: "0" }}
-                    className="hover:scale-105 transition-transform cursor-pointer"
-                />
-            </a>
-
-            {/* Required Backlink from user's snippet */}
-            <a
-                href="https://free-hit-counters.net/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[10px] text-muted-foreground mt-1 opacity-40 hover:opacity-100 transition-opacity"
-            >
-                Free-Hit-Counters
-            </a>
-        </motion.div>
+        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border-2 border-primary/20 text-primary rounded-full text-sm font-semibold shadow-sm hover:scale-105 transition-transform cursor-help" title="Total unique visitors">
+            <Users className="w-4 h-4" />
+            <span>Total Visits: {visits === null ? <Loader2 className="w-3 h-3 animate-spin inline ml-1" /> : visits.toLocaleString()}</span>
+        </div>
     );
 }
