@@ -11,16 +11,33 @@ import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-const poppins = Poppins({ 
+const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
   variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
-  title: "Kamran's Playful Learn - Educational Learning Platform",
-  description: "Browse courses, watch videos, and download notes for Intermediate education",
-  keywords: "education, learning, courses, videos, notes, intermediate",
+  title: "Kamran Cloud | Expert Mathematics & Science Education",
+  description: "Join Kamran Cloud, the ultimate educational platform for B.Tech, Intermediate, and Science students. Access high-quality mathematics video lectures, notes, and study materials by Dr. Kamran.",
+  keywords: "Kamran Cloud, KamranSir, Mathematics, B.Tech Math, Applied Mathematics, Intermediate Education, Kamran Khan, Video Lectures, Study Notes, Kamran Math",
+  authors: [{ name: "Dr. Kamran Khan" }],
+  openGraph: {
+    title: "Kamran Cloud - Official Learning Platform",
+    description: "Access high-quality B.Tech and Intermediate mathematics video lectures, notes, and study materials.",
+    url: "https://kamrans-cloud.vercel.app",
+    siteName: "Kamran Cloud",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Kamran Cloud - Official Learning Platform",
+    description: "Access high-quality mathematics video lectures and notes by Dr. Kamran.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  }
 };
 
 export default function RootLayout({
@@ -43,6 +60,25 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          {/* JSON-LD Structured Data for SEO */}
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "EducationalOrganization",
+                "name": "Kamran Cloud",
+                "url": "https://kamrans-cloud.vercel.app",
+                "logo": "https://kamrans-cloud.vercel.app/favicon.ico",
+                "founder": {
+                  "@type": "Person",
+                  "name": "Dr. Kamran Khan"
+                },
+                "sameAs": [],
+                "description": "Expert mathematics and science education for B.Tech and Intermediate students."
+              })
+            }}
+          />
           <QueryProvider>
             <AuthProvider>
               <header className="sticky top-0 z-50 w-full border-b bg-background">
