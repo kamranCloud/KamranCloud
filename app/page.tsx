@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Video, FileText, Sparkles, ArrowRight, GraduationCap } from "lucide-react";
+import VisitCounter from "@/components/VisitCounter";
 
 export default function Home() {
   const router = useRouter();
@@ -190,19 +191,7 @@ export default function Home() {
           </p>
 
           {/* Visit Counter */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="flex justify-center items-center"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fkamrans-cloud.vercel.app&count_bg=%233B82F6&title_bg=%231E293B&icon=&icon_color=%23E7E7E7&title=Total+Visits&edge_flat=false"
-              alt="Kamran Cloud Visits Strategy"
-              className="hover:scale-110 transition-transform cursor-help"
-            />
-          </motion.div>
+          <VisitCounter />
         </div>
       </footer>
 
