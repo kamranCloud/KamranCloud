@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function VisitCounter() {
     const [visits, setVisits] = useState<number | null>(null);
@@ -41,10 +41,35 @@ export default function VisitCounter() {
         };
     }, []);
 
+    if (visits === null) {
+        return (
+            <div className="flex justify-center items-center h-12">
+                <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
+
+    // Pad the visit count to ensure it has a minimum of 6 digits (e.g. 000123)
+    const paddedVisits = visits.toString().padStart(6, "0").split("");
+
     return (
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 border-2 border-primary/20 text-primary rounded-full text-sm font-semibold shadow-sm hover:scale-105 transition-transform cursor-help" title="Total unique visitors">
-            <Users className="w-4 h-4" />
-            <span>Total Visits: {visits === null ? <Loader2 className="w-3 h-3 animate-spin inline ml-1" /> : visits.toLocaleString()}</span>
+        <div className="flex flex-col items-center justify-center cursor-help" title="Total Website Visits">
+            <div className="flex bg-gradient-to-b from-[#ffffff] to-[#e4e4e4] rounded-md border border-gray-300 shadow-sm overflow-hidden">
+                {paddedVisits.map((digit, index) => (
+                    <div
+                        key={index}
+                        className={`
+              flex items-center justify-center 
+              w-6 h-8 sm:w-8 sm:h-10 
+              text-lg sm:text-xl font-bold text-gray-600 
+              border-r border-gray-300 last:border-r-0
+              shadow-[inset_0_2px_2px_rgba(255,255,255,1),inset_0_-2px_2px_rgba(0,0,0,0.05)]
+            `}
+                    >
+                        {digit}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }
