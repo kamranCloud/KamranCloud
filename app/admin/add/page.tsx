@@ -549,6 +549,7 @@ export default function AddContentPage() {
                   pendingContents.map((content) => (
                     <div key={content.id} className="flex items-center gap-4 p-4 bg-muted rounded-xl">
                       {content.thumbnail && (
+                        /* eslint-disable-next-line @next/next/no-img-element */
                         <img src={content.thumbnail} alt={content.title} className="w-24 h-16 object-cover rounded" />
                       )}
                       <div className="flex-1 min-w-0">

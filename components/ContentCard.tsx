@@ -18,7 +18,7 @@ const ContentCard = ({ content, delay = 0 }: ContentCardProps) => {
       }
       return url; // Fallback to original URL if parsing fails
     };
-    
+
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
@@ -57,7 +57,7 @@ const ContentCard = ({ content, delay = 0 }: ContentCardProps) => {
       </motion.div>
     );
   }
-  
+
   // Existing Video Card Logic
   const getThumbnailUrl = () => {
     if (content.thumbnail) return content.thumbnail;
@@ -84,6 +84,7 @@ const ContentCard = ({ content, delay = 0 }: ContentCardProps) => {
       <div className="relative aspect-video bg-muted overflow-hidden">
         {thumbnailUrl ? (
           <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={thumbnailUrl} alt={content.title} className="w-full h-full object-cover transition-transform group-hover:scale-105" />
             <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ExternalLink className="w-12 h-12 text-white/80" />

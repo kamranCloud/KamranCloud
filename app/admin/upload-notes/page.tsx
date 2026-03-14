@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Upload, FileText, Loader2, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useCallback, useEffect, Suspense } from "react";
@@ -21,7 +21,6 @@ interface UploadableFile {
 }
 
 function UploadNotesContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   // Get params from URL

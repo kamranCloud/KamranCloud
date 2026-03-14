@@ -67,19 +67,20 @@ const AdminContentCard = ({ content, onEdit, onDelete }: { content: ContentWithL
 
   // Video/Playlist Card
   const thumbnailUrl = content.thumbnail || `https://img.youtube.com/vi/${content.url.split('v=')[1]?.split('&')[0]}/mqdefault.jpg`;
-  
+
   return (
     <div className="flex flex-col h-full bg-card/80 backdrop-blur-sm rounded-2xl border-2 border-border transition-smooth overflow-hidden">
       <div className="relative aspect-video bg-muted overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={thumbnailUrl} alt={content.title} className="w-full h-full object-cover" />
       </div>
       <div className="p-3 md:p-4 flex flex-col flex-1">
         <h4 className="font-bold text-sm text-foreground mb-2 flex-1 line-clamp-2">{content.title}</h4>
         <p className="text-xs text-muted-foreground line-clamp-1 mb-2">Chapter: {content.chapterName}</p>
         <div className="flex justify-evenly items-center gap-1 md:gap-2 border-t pt-2">
-           <Button size="sm" variant="ghost" asChild><a href={content.url} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" /></a></Button>
-           <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="w-4 h-4" /></Button>
-           <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={onDelete}><Trash className="w-4 h-4" /></Button>
+          <Button size="sm" variant="ghost" asChild><a href={content.url} target="_blank" rel="noopener noreferrer"><ExternalLink className="w-4 h-4" /></a></Button>
+          <Button size="sm" variant="ghost" onClick={onEdit}><Edit className="w-4 h-4" /></Button>
+          <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={onDelete}><Trash className="w-4 h-4" /></Button>
         </div>
       </div>
     </div>
@@ -89,14 +90,14 @@ const AdminContentCard = ({ content, onEdit, onDelete }: { content: ContentWithL
 
 export default function AllContentPage() {
   const router = useRouter();
-  
+
   // Data states
   const [allContent, setAllContent] = useState<ContentWithLocation[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [years, setYears] = useState<Year[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  
+
   // Loading and filter states
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -112,7 +113,7 @@ export default function AllContentPage() {
   const [editingContent, setEditingContent] = useState<ContentWithLocation | null>(null);
   const [deletingContent, setDeletingContent] = useState<ContentWithLocation | null>(null);
   const [editFormData, setEditFormData] = useState({ title: '', description: '' });
-  const [editLocation, setEditLocation] = useState({ courseId: '', yearId: '', subjectId: '', chapterId: ''});
+  const [editLocation, setEditLocation] = useState({ courseId: '', yearId: '', subjectId: '', chapterId: '' });
 
   // State for edit modal dropdowns
   const [modalYears, setModalYears] = useState<Year[]>([]);
@@ -140,7 +141,7 @@ export default function AllContentPage() {
     if (editLocation.courseId) {
       const fetchYears = async () => {
         const querySnapshot = await getDocs(collection(db, `courses/${editLocation.courseId}/years`));
-        setModalYears(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Year)).sort((a,b) => a.order - b.order));
+        setModalYears(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Year)).sort((a, b) => a.order - b.order));
       };
       fetchYears();
     }
@@ -150,7 +151,7 @@ export default function AllContentPage() {
     if (editLocation.yearId) {
       const fetchSubjects = async () => {
         const querySnapshot = await getDocs(collection(db, `courses/${editLocation.courseId}/years/${editLocation.yearId}/subjects`));
-        setModalSubjects(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject)).sort((a,b) => a.order - b.order));
+        setModalSubjects(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject)).sort((a, b) => a.order - b.order));
       };
       fetchSubjects();
     }
@@ -160,7 +161,7 @@ export default function AllContentPage() {
     if (editLocation.subjectId) {
       const fetchChapters = async () => {
         const querySnapshot = await getDocs(collection(db, `courses/${editLocation.courseId}/years/${editLocation.yearId}/subjects/${editLocation.subjectId}/chapters`));
-        setModalChapters(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Chapter)).sort((a,b) => a.order - b.order));
+        setModalChapters(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Chapter)).sort((a, b) => a.order - b.order));
       };
       fetchChapters();
     }
@@ -172,9 +173,9 @@ export default function AllContentPage() {
       setLoading(true);
       try {
         const coursesSnapshot = await getDocs(collection(db, 'courses'));
-        const coursesData: Course[] = coursesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)).sort((a,b) => a.order - b.order);
+        const coursesData: Course[] = coursesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)).sort((a, b) => a.order - b.order);
         setCourses(coursesData);
-        
+
         const contentList: ContentWithLocation[] = [];
         for (const course of coursesData) {
           const yearsSnapshot = await getDocs(collection(db, `courses/${course.id}/years`));
@@ -184,7 +185,7 @@ export default function AllContentPage() {
               const chaptersSnapshot = await getDocs(collection(db, `courses/${course.id}/years/${yearDoc.id}/subjects/${subjectDoc.id}/chapters`));
               chaptersSnapshot.forEach(chapterDoc => {
                 const chapterData = chapterDoc.data() as Chapter;
-          if (chapterData.content && Array.isArray(chapterData.content)) {
+                if (chapterData.content && Array.isArray(chapterData.content)) {
                   const contentWithLocation = chapterData.content.map(c => ({
                     ...c,
                     courseId: course.id,
@@ -215,7 +216,7 @@ export default function AllContentPage() {
     if (filters.courseId) {
       const fetchYears = async () => {
         const querySnapshot = await getDocs(collection(db, `courses/${filters.courseId}/years`));
-        setYears(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Year)).sort((a,b) => a.order - b.order));
+        setYears(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Year)).sort((a, b) => a.order - b.order));
       };
       fetchYears();
     } else {
@@ -227,7 +228,7 @@ export default function AllContentPage() {
     if (filters.yearId) {
       const fetchSubjects = async () => {
         const querySnapshot = await getDocs(collection(db, `courses/${filters.courseId}/years/${filters.yearId}/subjects`));
-        setSubjects(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject)).sort((a,b) => a.order - b.order));
+        setSubjects(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Subject)).sort((a, b) => a.order - b.order));
       };
       fetchSubjects();
     } else {
@@ -239,7 +240,7 @@ export default function AllContentPage() {
     if (filters.subjectId) {
       const fetchChapters = async () => {
         const querySnapshot = await getDocs(collection(db, `courses/${filters.courseId}/years/${filters.yearId}/subjects/${filters.subjectId}/chapters`));
-        setChapters(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Chapter)).sort((a,b) => a.order - b.order));
+        setChapters(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Chapter)).sort((a, b) => a.order - b.order));
       };
       fetchChapters();
     } else {
@@ -313,7 +314,7 @@ export default function AllContentPage() {
       setDeletingContent(null);
     }
   };
-  
+
   const handleEditLocationChange = (field: 'courseId' | 'yearId' | 'subjectId' | 'chapterId', value: string) => {
     setEditLocation(prev => {
       const newState = { ...prev, [field]: value };
@@ -360,7 +361,7 @@ export default function AllContentPage() {
       title: editFormData.title,
       description: editFormData.description,
     };
-    
+
     try {
       const user = auth.currentUser;
       if (!user) {
@@ -389,14 +390,14 @@ export default function AllContentPage() {
       }
 
       // 3. Update local state
-      setAllContent(prev => prev.map(c => 
-        c.id === editingContent.id 
-        ? {
+      setAllContent(prev => prev.map(c =>
+        c.id === editingContent.id
+          ? {
             ...updatedContent,
             ...newLocation,
             chapterName: modalChapters.find(ch => ch.id === newLocation.chapterId)?.name || ''
           }
-        : c
+          : c
       ));
 
       toast.success("Content updated successfully!");
@@ -431,7 +432,7 @@ export default function AllContentPage() {
 
       <main className="container mx-auto px-4 sm:px-6 py-8">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-          
+
           {/* Filters */}
           <div className="bg-card rounded-2xl p-4 sm:p-6 border-2 border-border">
             <h2 className="text-lg sm:text-xl font-bold mb-4">Filters</h2>
@@ -463,7 +464,7 @@ export default function AllContentPage() {
               </Select>
             </div>
           </div>
-          
+
           {/* Search Bar */}
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
@@ -478,13 +479,13 @@ export default function AllContentPage() {
           {/* Content List */}
           <div>
             <p className="text-sm text-muted-foreground mb-4">{filteredContent.length} item(s) found.</p>
-          {filteredContent.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="bg-card rounded-2xl p-12 border-2 border-border">
+            {filteredContent.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="bg-card rounded-2xl p-12 border-2 border-border">
                   <p className="text-xl text-muted-foreground">No content matches your criteria.</p>
                 </div>
-            </div>
-          ) : (
+              </div>
+            ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
                 {filteredContent.map((content) => (
                   <AdminContentCard
@@ -493,67 +494,67 @@ export default function AllContentPage() {
                     onEdit={() => setEditingContent(content)}
                     onDelete={() => setDeletingContent(content)}
                   />
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
           </div>
         </motion.div>
       </main>
-      
+
       {/* Edit Dialog */}
       <Dialog open={!!editingContent} onOpenChange={() => setEditingContent(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Content</DialogTitle>
             <DialogDescription>
-               Update the content details and location. Click save when you&apos;re done.
+              Update the content details and location. Click save when you&apos;re done.
             </DialogDescription>
           </DialogHeader>
           {editingContent && (
-             <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
-                <div className="space-y-2">
-                   <Label>Title</Label>
-                   <Input value={editFormData.title} onChange={e => setEditFormData({...editFormData, title: e.target.value})} />
+            <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-2">
+              <div className="space-y-2">
+                <Label>Title</Label>
+                <Input value={editFormData.title} onChange={e => setEditFormData({ ...editFormData, title: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Description</Label>
+                <textarea value={editFormData.description} onChange={e => setEditFormData({ ...editFormData, description: e.target.value })} rows={3} className="w-full text-sm px-3 py-2 rounded-md border bg-transparent" />
+              </div>
+              <div className="space-y-2 pt-4">
+                <div className="flex justify-between items-center mb-2">
+                  <Label>New Location</Label>
+                  <Button variant="link" size="sm" className="h-auto p-0" onClick={() => {
+                    setEditLocation({
+                      courseId: editingContent.courseId,
+                      yearId: editingContent.yearId,
+                      subjectId: editingContent.subjectId,
+                      chapterId: editingContent.chapterId,
+                    });
+                    toast.info("Location has been reset to its original value.");
+                  }}>
+                    Reset Location
+                  </Button>
                 </div>
-                 <div className="space-y-2">
-                   <Label>Description</Label>
-                   <textarea value={editFormData.description} onChange={e => setEditFormData({...editFormData, description: e.target.value})} rows={3} className="w-full text-sm px-3 py-2 rounded-md border bg-transparent" />
+                <div className="grid grid-cols-2 gap-4">
+                  <Select value={editLocation.courseId} onValueChange={value => handleEditLocationChange('courseId', value)}>
+                    <SelectTrigger><SelectValue placeholder="Select Course" /></SelectTrigger>
+                    <SelectContent>{courses.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={editLocation.yearId} onValueChange={value => handleEditLocationChange('yearId', value)} disabled={!editLocation.courseId}>
+                    <SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger>
+                    <SelectContent>{modalYears.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={editLocation.subjectId} onValueChange={value => handleEditLocationChange('subjectId', value)} disabled={!editLocation.yearId}>
+                    <SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger>
+                    <SelectContent>{modalSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                  <Select value={editLocation.chapterId} onValueChange={value => handleEditLocationChange('chapterId', value)} disabled={!editLocation.subjectId}>
+                    <SelectTrigger><SelectValue placeholder="Select Chapter" /></SelectTrigger>
+                    <SelectContent>{modalChapters.map(ch => <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>)}</SelectContent>
+                  </Select>
                 </div>
-                <div className="space-y-2 pt-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <Label>New Location</Label>
-                    <Button variant="link" size="sm" className="h-auto p-0" onClick={() => {
-                      setEditLocation({
-                        courseId: editingContent.courseId,
-                        yearId: editingContent.yearId,
-                        subjectId: editingContent.subjectId,
-                        chapterId: editingContent.chapterId,
-                      });
-                      toast.info("Location has been reset to its original value.");
-                    }}>
-                      Reset Location
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                     <Select value={editLocation.courseId} onValueChange={value => handleEditLocationChange('courseId', value)}>
-                        <SelectTrigger><SelectValue placeholder="Select Course" /></SelectTrigger>
-                        <SelectContent>{courses.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                       <Select value={editLocation.yearId} onValueChange={value => handleEditLocationChange('yearId', value)} disabled={!editLocation.courseId}>
-                        <SelectTrigger><SelectValue placeholder="Select Year" /></SelectTrigger>
-                        <SelectContent>{modalYears.map(y => <SelectItem key={y.id} value={y.id}>{y.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                       <Select value={editLocation.subjectId} onValueChange={value => handleEditLocationChange('subjectId', value)} disabled={!editLocation.yearId}>
-                        <SelectTrigger><SelectValue placeholder="Select Subject" /></SelectTrigger>
-                        <SelectContent>{modalSubjects.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                       <Select value={editLocation.chapterId} onValueChange={value => handleEditLocationChange('chapterId', value)} disabled={!editLocation.subjectId}>
-                        <SelectTrigger><SelectValue placeholder="Select Chapter" /></SelectTrigger>
-                        <SelectContent>{modalChapters.map(ch => <SelectItem key={ch.id} value={ch.id}>{ch.name}</SelectItem>)}</SelectContent>
-                      </Select>
-                  </div>
-                </div>
-             </div>
+              </div>
+            </div>
           )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditingContent(null)}>Cancel</Button>
@@ -563,7 +564,7 @@ export default function AllContentPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-       <AlertDialog open={!!deletingContent} onOpenChange={() => setDeletingContent(null)}>
+      <AlertDialog open={!!deletingContent} onOpenChange={() => setDeletingContent(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
