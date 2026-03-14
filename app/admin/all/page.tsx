@@ -38,8 +38,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { collection, getDocs, doc, updateDoc, arrayRemove, arrayUnion, writeBatch } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { Course, Year, Subject, Chapter, Content } from "@/types";
 import { toast } from "sonner";
 
@@ -287,9 +287,19 @@ export default function AllContentPage() {
   const handleDelete = async () => {
     if (!deletingContent) return;
     try {
-      const response = await fetch('/api/delete-content', {
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("Please log in again.");
+      }
+
+      const idToken = await user.getIdToken();
+
+      const response = await fetch('/api/admin/delete-content', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
         body: JSON.stringify({ contentItem: deletingContent }),
       });
 
@@ -338,15 +348,6 @@ export default function AllContentPage() {
       return;
     }
 
-    const originalContent: Content = {
-      id: editingContent.id,
-      type: editingContent.type,
-      title: editingContent.title,
-      url: editingContent.url,
-      thumbnail: editingContent.thumbnail,
-      description: editingContent.description,
-    };
-
     const originalLocation = {
       courseId: editingContent.courseId,
       yearId: editingContent.yearId,
@@ -357,26 +358,40 @@ export default function AllContentPage() {
     const newLocation = editLocation;
 
     const updatedContent: Content = {
-      ...originalContent,
+      id: editingContent.id,
+      type: editingContent.type,
+      url: editingContent.url,
+      thumbnail: editingContent.thumbnail,
       title: editFormData.title,
       description: editFormData.description,
     };
     
-    // Clean objects by removing undefined properties before sending to Firestore
-    const cleanObject = (obj: any) => JSON.parse(JSON.stringify(obj));
-
     try {
-      const batch = writeBatch(db);
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("Please log in again.");
+      }
 
-      // 1. Remove from old chapter
-      const oldChapterRef = doc(db, `courses/${originalLocation.courseId}/years/${originalLocation.yearId}/subjects/${originalLocation.subjectId}/chapters/${originalLocation.chapterId}`);
-      batch.update(oldChapterRef, { content: arrayRemove(cleanObject(originalContent)) });
+      const idToken = await user.getIdToken();
 
-      // 2. Add to new chapter
-      const newChapterRef = doc(db, `courses/${newLocation.courseId}/years/${newLocation.yearId}/subjects/${newLocation.subjectId}/chapters/${newLocation.chapterId}`);
-      batch.update(newChapterRef, { content: arrayUnion(cleanObject(updatedContent)) });
+      const response = await fetch('/api/admin/update-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          originalLocation,
+          newLocation,
+          originalContentId: editingContent.id,
+          updatedContent,
+        }),
+      });
 
-      await batch.commit();
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to update content.");
+      }
 
       // 3. Update local state
       setAllContent(prev => prev.map(c => 
@@ -392,9 +407,9 @@ export default function AllContentPage() {
       toast.success("Content updated successfully!");
       setEditingContent(null);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating content:", error);
-      toast.error("Failed to update content.");
+      toast.error(error.message || "Failed to update content.");
     }
   }
 

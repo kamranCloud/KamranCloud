@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
+import { saveRefreshToken } from '@/lib/google-tokens';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -57,7 +58,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Display the refresh token to the user
+    // Save the refresh token to the database
+    await saveRefreshToken(refresh_token);
+
     const html = `
       <html>
         <head>
@@ -73,10 +76,10 @@ export async function GET(request: NextRequest) {
         </head>
         <body>
           <h1 class="success">✅ Authorization Successful!</h1>
-          <p>Copy the refresh token below and add it to your <code>.env.local</code> file:</p>
+          <p>The refresh token has been <strong>automatically saved to the database</strong>. You don't need to manually copy it anymore.</p>
           
           <div class="token-box">
-            <strong>Your Refresh Token:</strong><br><br>
+            <strong>Your Refresh Token (For Backup):</strong><br><br>
             <code id="refreshToken">${refresh_token}</code>
           </div>
 
@@ -84,10 +87,8 @@ export async function GET(request: NextRequest) {
 
           <h3>Next Steps:</h3>
           <ol>
-            <li>Open your <code>.env.local</code> file</li>
-            <li>Add: <code>GOOGLE_REFRESH_TOKEN="${refresh_token}"</code></li>
-            <li>Save the file and restart your dev server</li>
-            <li>Add the same variable to Vercel environment variables for production</li>
+            <li>You can now close this tab and return to your application.</li>
+            <li>File uploads in the Admin Panel should now work seamlessly.</li>
           </ol>
 
           <p><a href="/admin/add">← Back to Admin Panel</a></p>

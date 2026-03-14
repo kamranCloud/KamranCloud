@@ -140,13 +140,32 @@ export default function UploadNotesPage() {
       return;
     }
 
+    let successCount = 0;
+    let failedCount = 0;
+
     for (const file of filesToUpload) {
-      await uploadFile(file);
+      const success = await uploadFile(file);
+      if (success) {
+        successCount += 1;
+      } else {
+        failedCount += 1;
+      }
     }
-    toast.success("All uploads complete!");
+
+    if (successCount > 0 && failedCount > 0) {
+      toast.success(`${successCount} file(s) uploaded successfully. ${failedCount} file(s) failed.`);
+      return;
+    }
+
+    if (successCount > 0) {
+      toast.success(`${successCount} file(s) uploaded successfully.`);
+      return;
+    }
+
+    toast.error("Upload finished, but no files were uploaded successfully.");
   };
 
-  const uploadFile = async (uploadable: UploadableFile) => {
+  const uploadFile = async (uploadable: UploadableFile): Promise<boolean> => {
     setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'uploading', progress: 5 } : f));
 
     let accessToken = '';
@@ -181,7 +200,11 @@ export default function UploadNotesPage() {
 
         const chunkResponse = await fetch(uploadUrl, {
           method: 'PUT',
-          headers: { 'Content-Range': `bytes ${uploadedBytes}-${endByte}/${uploadable.file.size}` },
+          headers: {
+            'Content-Range': `bytes ${uploadedBytes}-${endByte}/${uploadable.file.size}`,
+            // Resumable uploads require auth on every chunk
+            'Authorization': `Bearer ${accessToken}`,
+          },
           body: chunk,
         });
             
@@ -221,12 +244,16 @@ export default function UploadNotesPage() {
 
           const uploadedUrl = `https://drive.google.com/file/d/${fileId}/view?usp=sharing`;
           setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'completed', progress: 100, uploadedUrl: uploadedUrl } : f));
-          break; // Exit while loop
+          return true;
         }
       }
     } catch (err: any) {
       setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'error', error: err.message } : f));
+      return false;
     }
+
+    setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, status: 'error', error: 'Upload ended unexpectedly.' } : f));
+    return false;
   };
 
   const handleAddFilesToPost = () => {
@@ -252,6 +279,8 @@ export default function UploadNotesPage() {
   const allDone = files.length > 0 && files.every(f => f.status === 'completed' || f.status === 'error');
   const isUploading = files.some(f => f.status === 'uploading');
   const hasPending = files.some(f => f.status === 'pending');
+  const completedFiles = files.filter(f => f.status === 'completed' && f.uploadedUrl);
+  const failedFiles = files.filter(f => f.status === 'error');
 
   if (!location.courseId) {
     return (
@@ -340,6 +369,53 @@ export default function UploadNotesPage() {
               ))}
                   </div>
                 )}
+
+          {allDone && (
+            <div className="bg-card rounded-2xl p-8 border-2 border-border shadow-doodle space-y-4">
+              <h2 className="text-xl font-bold">Upload Summary</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="rounded-lg border p-4">
+                  <p className="text-sm text-muted-foreground">Successfully Uploaded</p>
+                  <p className="text-2xl font-bold text-success">{completedFiles.length}</p>
+                </div>
+                <div className="rounded-lg border p-4">
+                  <p className="text-sm text-muted-foreground">Failed Uploads</p>
+                  <p className="text-2xl font-bold text-destructive">{failedFiles.length}</p>
+                </div>
+              </div>
+
+              {completedFiles.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Submitted Links</h3>
+                  {completedFiles.map(file => (
+                    <div key={file.id} className="rounded-lg border p-4 space-y-1">
+                      <p className="font-medium">{file.title}</p>
+                      <a
+                        href={file.uploadedUrl!}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-primary break-all hover:underline"
+                      >
+                        {file.uploadedUrl}
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {failedFiles.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Failed Files</h3>
+                  {failedFiles.map(file => (
+                    <div key={file.id} className="rounded-lg border border-destructive/30 p-4 space-y-1">
+                      <p className="font-medium">{file.title}</p>
+                      <p className="text-sm text-destructive break-all">{file.error || "Upload failed."}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-4">

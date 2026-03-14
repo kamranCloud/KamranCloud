@@ -15,8 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { collection, getDocs, doc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 import { Course, Year, Subject, Chapter } from "@/types";
 
 type CourseFromFirestore = Omit<Course, 'years'>;
@@ -30,6 +30,11 @@ interface PendingContent {
   url: string;
   thumbnail?: string;
   description?: string;
+}
+
+interface SubmitResult {
+  successful: PendingContent[];
+  failed: Array<PendingContent & { error: string }>;
 }
 
 export default function AddContentPage() {
@@ -47,6 +52,8 @@ export default function AddContentPage() {
   const [contentDescription, setContentDescription] = useState('');
   const [pendingContents, setPendingContents] = useState<PendingContent[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitResult, setSubmitResult] = useState<SubmitResult | null>(null);
 
   const [courses, setCourses] = useState<CourseFromFirestore[]>([]);
   const [years, setYears] = useState<YearFromFirestore[]>([]);
@@ -260,21 +267,61 @@ export default function AddContentPage() {
       return;
     }
 
+    setIsSubmitting(true);
+    setSubmitResult(null);
+
     try {
-      const chapterRef = doc(db, "courses", courseId, "years", yearId, "subjects", subjectId, "chapters", chapterId);
-      
-      // Add all content items in a single update using arrayUnion with spread operator
-      await updateDoc(chapterRef, {
-        content: arrayUnion(...pendingContents)
+      const user = auth.currentUser;
+      if (!user) {
+        toast.error("Please log in again.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const idToken = await user.getIdToken();
+
+      const response = await fetch('/api/admin/submit-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          courseId,
+          yearId,
+          subjectId,
+          chapterId,
+          pendingContents,
+        }),
       });
 
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit content.");
+      }
+
       toast.success(`${pendingContents.length} item(s) added successfully!`);
+      setSubmitResult({
+        successful: [...pendingContents],
+        failed: [],
+      });
       
       // Only clear the pending contents, keep the form data so user can add more to same chapter
       setPendingContents([]);
     } catch (error) {
       console.error("Error submitting content: ", error);
-      toast.error("Failed to add content. Please check console for details.");
+      const errorMessage = error instanceof Error ? error.message : "Failed to add content. Please check console for details.";
+      toast.error(errorMessage);
+      setSubmitResult({
+        successful: [],
+        failed: pendingContents.map(content => ({
+          ...content,
+          error: errorMessage,
+        })),
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -425,29 +472,41 @@ export default function AddContentPage() {
                 <div className="flex items-center justify-between">
                   <Label>{contentType === 'notes' ? 'Google Drive URL' : 'YouTube URL'}</Label>
                   {contentType === 'notes' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!formData.chapterId) {
-                          toast.error("Please select course, year, subject, and chapter first.");
-                          return;
-                        }
-                        const params = new URLSearchParams({
-                          courseId: formData.courseId,
-                          yearId: formData.yearId,
-                          subjectId: formData.subjectId,
-                          chapterId: formData.chapterId,
-                              courseName: courses.find(c => c.id === formData.courseId)?.name || '',
-                              yearName: years.find(y => y.id === formData.yearId)?.name || '',
-                              subjectName: subjects.find(s => s.id === formData.subjectId)?.name || '',
-                              chapterName: chapters.find(c => c.id === formData.chapterId)?.name || '',
-                        });
-                        router.push(`/admin/upload-notes?${params.toString()}`);
-                      }}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      Don't have URL? Upload file →
-                    </button>
+                    <div className="flex gap-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          // Redirect to auth endpoint which we will create to redirect to Google
+                          window.location.href = '/api/google-auth-init';
+                        }}
+                        className="text-sm text-muted-foreground hover:text-primary hover:underline flex items-center"
+                      >
+                        [Authorize Google Drive]
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!formData.chapterId) {
+                            toast.error("Please select course, year, subject, and chapter first.");
+                            return;
+                          }
+                          const params = new URLSearchParams({
+                            courseId: formData.courseId,
+                            yearId: formData.yearId,
+                            subjectId: formData.subjectId,
+                            chapterId: formData.chapterId,
+                                courseName: courses.find(c => c.id === formData.courseId)?.name || '',
+                                yearName: years.find(y => y.id === formData.yearId)?.name || '',
+                                subjectName: subjects.find(s => s.id === formData.subjectId)?.name || '',
+                                chapterName: chapters.find(c => c.id === formData.chapterId)?.name || '',
+                          });
+                          router.push(`/admin/upload-notes?${params.toString()}`);
+                        }}
+                        className="text-sm text-primary hover:underline"
+                      >
+                        Don't have URL? Upload file →
+                      </button>
+                    </div>
                   )}
                 </div>
                 <div className="flex items-center gap-2">
@@ -518,10 +577,70 @@ export default function AddContentPage() {
                 onClick={handleSubmitAll}
                 variant="hero"
                 className="w-full mt-6"
-                disabled={!formData.chapterId}
+                disabled={!formData.chapterId || isSubmitting}
               >
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Submit All ({pendingContents.length} items)
               </Button>
+
+              {submitResult && (
+                <div className="mt-6 space-y-4 border-t pt-6">
+                  <h3 className="text-lg font-bold">Submission Summary</h3>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-lg border p-4">
+                      <p className="text-sm text-muted-foreground">Successful</p>
+                      <p className="text-2xl font-bold text-green-600">{submitResult.successful.length}</p>
+                    </div>
+                    <div className="rounded-lg border p-4">
+                      <p className="text-sm text-muted-foreground">Failed</p>
+                      <p className="text-2xl font-bold text-destructive">{submitResult.failed.length}</p>
+                    </div>
+                  </div>
+
+                  {submitResult.successful.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold">Successfully Submitted</h4>
+                      {submitResult.successful.map((content) => (
+                        <div key={content.id} className="rounded-lg border p-3 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-medium truncate">{content.title}</p>
+                            <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full capitalize">
+                              {content.type}
+                            </span>
+                          </div>
+                          <a
+                            href={content.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-sm text-primary break-all hover:underline"
+                          >
+                            {content.url}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {submitResult.failed.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold">Failed Items</h4>
+                      {submitResult.failed.map((content) => (
+                        <div key={content.id} className="rounded-lg border border-destructive/30 p-3 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <p className="font-medium truncate">{content.title}</p>
+                            <span className="text-xs px-2 py-1 bg-destructive/10 text-destructive rounded-full capitalize">
+                              {content.type}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground break-all">{content.url}</p>
+                          <p className="text-sm text-destructive">{content.error}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
           </div>
           </div>
         </div>
