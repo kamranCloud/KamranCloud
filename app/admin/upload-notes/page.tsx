@@ -23,7 +23,7 @@ interface UploadableFile {
 function UploadNotesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   // Get params from URL
   const [location, setLocation] = useState({
     courseId: '',
@@ -51,7 +51,7 @@ function UploadNotesContent() {
 
   const [files, setFiles] = useState<UploadableFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
-  
+
   const handleFileAction = useCallback((incomingFiles: FileList | null) => {
     if (!incomingFiles) return;
 
@@ -103,11 +103,11 @@ function UploadNotesContent() {
     handleFileAction(e.target.files);
     e.target.value = ''; // Reset input
   };
-  
+
   const updateFileDetail = (id: string, key: 'title' | 'description', value: string) => {
     setFiles(prev => prev.map(f => f.id === id ? { ...f, [key]: value } : f));
   };
-  
+
   const removeFile = async (id: string) => {
     const fileToRemove = files.find(f => f.id === id);
     if (!fileToRemove) return;
@@ -133,7 +133,7 @@ function UploadNotesContent() {
 
     setFiles(prev => prev.filter(f => f.id !== id));
   };
-  
+
   const handleUploadAll = async () => {
     const filesToUpload = files.filter(f => f.status === 'pending');
     if (filesToUpload.length === 0) {
@@ -185,10 +185,10 @@ function UploadNotesContent() {
       });
 
       if (!initResponse.ok) throw new Error('Failed to initialize upload');
-      
+
       const { uploadUrl, accessToken: initialAccessToken } = await initResponse.json();
       accessToken = initialAccessToken;
-      
+
       setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, progress: 15 } : f));
 
       // 2. Upload in chunks
@@ -208,15 +208,15 @@ function UploadNotesContent() {
           },
           body: chunk,
         });
-            
+
         if (chunkResponse.status !== 308 && chunkResponse.status !== 200 && chunkResponse.status !== 201) {
           throw new Error(`Upload failed with status ${chunkResponse.status}`);
         }
-        
+
         uploadedBytes += chunk.size;
         const progress = 15 + Math.floor((uploadedBytes / uploadable.file.size) * 75);
         setFiles(prev => prev.map(f => f.id === uploadable.id ? { ...f, progress } : f));
-        
+
         if (chunkResponse.status === 200 || chunkResponse.status === 201) {
           const result = await chunkResponse.json();
           const fileId = result.id;
@@ -272,10 +272,10 @@ function UploadNotesContent() {
       url: f.uploadedUrl,
       description: f.description,
     }));
-    
+
     // Use localStorage to pass data to the /add page
     localStorage.setItem('uploadedFiles', JSON.stringify(contentForAddPage));
-    router.push('/admin/add');
+    window.location.href = '/admin/add';
   };
 
   const allDone = files.length > 0 && files.every(f => f.status === 'completed' || f.status === 'error');
@@ -290,7 +290,7 @@ function UploadNotesContent() {
         <div>
           <h2 className="text-2xl font-bold mb-4">Invalid Access</h2>
           <p className="text-muted-foreground mb-4">Please select a location from the Add Content page first.</p>
-          <Button onClick={() => router.push('/admin/add')}>Go to Add Content</Button>
+          <Button onClick={() => window.location.href = '/admin/add'}>Go to Add Content</Button>
         </div>
       </div>
     );
@@ -300,7 +300,7 @@ function UploadNotesContent() {
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Button variant="ghost" onClick={() => router.push('/admin/add')} className="hover:scale-105 transition-bounce">
+          <Button variant="ghost" onClick={() => window.location.href = '/admin/add'} className="hover:scale-105 transition-bounce">
             <ArrowLeft className="mr-2" />
             Back to Add Content
           </Button>
@@ -314,29 +314,29 @@ function UploadNotesContent() {
           {/* Location Info */}
           <div className="bg-card rounded-2xl p-6 border-2 border-border shadow-doodle">
             <h2 className="text-lg font-bold mb-4">Upload Location</h2>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-               <div><span className="text-muted-foreground">Course:</span><p className="font-semibold">{location.courseName}</p></div>
-               <div><span className="text-muted-foreground">Year:</span><p className="font-semibold">{location.yearName}</p></div>
-               <div><span className="text-muted-foreground">Subject:</span><p className="font-semibold">{location.subjectName}</p></div>
-               <div><span className="text-muted-foreground">Chapter:</span><p className="font-semibold">{location.chapterName}</p></div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+              <div><span className="text-muted-foreground">Course:</span><p className="font-semibold">{location.courseName}</p></div>
+              <div><span className="text-muted-foreground">Year:</span><p className="font-semibold">{location.yearName}</p></div>
+              <div><span className="text-muted-foreground">Subject:</span><p className="font-semibold">{location.subjectName}</p></div>
+              <div><span className="text-muted-foreground">Chapter:</span><p className="font-semibold">{location.chapterName}</p></div>
             </div>
           </div>
 
           {/* Upload Area */}
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
             className={`border-2 border-dashed rounded-xl p-12 text-center transition-all ${isDragging ? 'border-primary bg-primary/5 scale-105' : 'border-border hover:border-primary/50'}`}
-                >
-                  <Upload className={`w-16 h-16 mx-auto mb-4 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
+          >
+            <Upload className={`w-16 h-16 mx-auto mb-4 ${isDragging ? 'text-primary' : 'text-muted-foreground'}`} />
             <p className="text-lg font-semibold">Drag & Drop files here</p>
             <p className="text-muted-foreground">or</p>
             <label htmlFor="file-input" className="mt-4 inline-block">
               <Button variant="outline" asChild><span>Browse Files</span></Button>
             </label>
             <input id="file-input" type="file" multiple className="hidden" onChange={handleFileSelect} accept=".pdf,.doc,.docx,.ppt,.pptx" />
-             <p className="text-xs text-muted-foreground mt-2">Supported: PDF, DOC, DOCX, PPT, PPTX (Max 100MB)</p>
+            <p className="text-xs text-muted-foreground mt-2">Supported: PDF, DOC, DOCX, PPT, PPTX (Max 100MB)</p>
           </div>
 
           {/* File List */}
@@ -345,32 +345,32 @@ function UploadNotesContent() {
               <h2 className="text-xl font-bold">Files to Upload</h2>
               {files.map(f => (
                 <div key={f.id} className="p-4 border rounded-lg space-y-3">
-                   <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-4">
                     <div className="w-16 h-16 flex items-center justify-center bg-muted rounded">
-                      <FileText className="w-8 h-8 text-muted-foreground"/>
+                      <FileText className="w-8 h-8 text-muted-foreground" />
                     </div>
                     <div className="flex-1 space-y-2">
-                       <Input value={f.title} onChange={e => updateFileDetail(f.id, 'title', e.target.value)} placeholder="File title" />
-                       <textarea value={f.description} onChange={e => updateFileDetail(f.id, 'description', e.target.value)} placeholder="Description (optional)" rows={2} className="w-full text-sm px-3 py-2 rounded-md border bg-transparent" />
+                      <Input value={f.title} onChange={e => updateFileDetail(f.id, 'title', e.target.value)} placeholder="File title" />
+                      <textarea value={f.description} onChange={e => updateFileDetail(f.id, 'description', e.target.value)} placeholder="Description (optional)" rows={2} className="w-full text-sm px-3 py-2 rounded-md border bg-transparent" />
                     </div>
-                    <Button variant="ghost" size="icon" onClick={() => removeFile(f.id)}><X className="w-4 h-4"/></Button>
-                   </div>
-                   {f.status !== 'pending' && (
-                     <div className="space-y-1">
-                       <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                         <div className="h-full bg-primary transition-all duration-300" style={{ width: `${f.progress}%` }} />
-                       </div>
-                       <div className="flex justify-between items-center text-xs">
-                         <span className="capitalize">{f.status}</span>
-                         {f.status === 'error' && <span className="text-destructive">{f.error}</span>}
-                         {f.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-success" />}
-                       </div>
+                    <Button variant="ghost" size="icon" onClick={() => removeFile(f.id)}><X className="w-4 h-4" /></Button>
+                  </div>
+                  {f.status !== 'pending' && (
+                    <div className="space-y-1">
+                      <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+                        <div className="h-full bg-primary transition-all duration-300" style={{ width: `${f.progress}%` }} />
+                      </div>
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="capitalize">{f.status}</span>
+                        {f.status === 'error' && <span className="text-destructive">{f.error}</span>}
+                        {f.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-success" />}
+                      </div>
                     </div>
                   )}
                 </div>
               ))}
-                  </div>
-                )}
+            </div>
+          )}
 
           {allDone && (
             <div className="bg-card rounded-2xl p-8 border-2 border-border shadow-doodle space-y-4">
@@ -423,20 +423,20 @@ function UploadNotesContent() {
           <div className="flex gap-4">
             {hasPending && !isUploading && (
               <Button onClick={handleUploadAll} className="flex-1" variant="hero">
-                      <Upload className="w-4 h-4 mr-2" />
+                <Upload className="w-4 h-4 mr-2" />
                 Upload All Pending Files
               </Button>
-                  )}
+            )}
             {isUploading && (
-               <Button disabled className="flex-1">
+              <Button disabled className="flex-1">
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Uploading...
-                </Button>
+              </Button>
             )}
             {allDone && (
               <Button onClick={handleAddFilesToPost} className="flex-1" variant="success">
                 Add {files.filter(f => f.status === 'completed').length} Files to Content List
-                  </Button>
+              </Button>
             )}
           </div>
         </motion.div>
