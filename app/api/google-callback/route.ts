@@ -17,7 +17,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
-  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI) {
+  let GOOGLE_REDIRECT_URI_LOCAL = GOOGLE_REDIRECT_URI;
+  const host = request.headers.get('host');
+  if (host && !host.includes('localhost') && GOOGLE_REDIRECT_URI_LOCAL?.includes('localhost')) {
+    GOOGLE_REDIRECT_URI_LOCAL = `https://${host}/api/google-callback`;
+  }
+
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_REDIRECT_URI_LOCAL) {
     return new NextResponse('Google OAuth not configured properly.', {
       status: 500,
       headers: { 'Content-Type': 'text/html' },
@@ -30,7 +36,7 @@ export async function GET(request: NextRequest) {
       code,
       client_id: GOOGLE_CLIENT_ID,
       client_secret: GOOGLE_CLIENT_SECRET,
-      redirect_uri: GOOGLE_REDIRECT_URI,
+      redirect_uri: GOOGLE_REDIRECT_URI_LOCAL,
       grant_type: 'authorization_code',
     });
 

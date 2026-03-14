@@ -2,7 +2,12 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request: Request) {
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+  let GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
+
+  const host = request.headers.get('host');
+  if (host && !host.includes('localhost') && GOOGLE_REDIRECT_URI?.includes('localhost')) {
+    GOOGLE_REDIRECT_URI = `https://${host}/api/google-callback`;
+  }
 
   if (!GOOGLE_CLIENT_ID || !GOOGLE_REDIRECT_URI) {
     return new NextResponse('Google OAuth not configured properly in environment variables.', { status: 500 });
