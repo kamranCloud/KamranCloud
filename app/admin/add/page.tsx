@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, Plus, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -481,13 +482,9 @@ export default function AddContentPage() {
                           >
                             [Authorize Google Drive]
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (!formData.chapterId) {
-                                toast.error("Please select course, year, subject, and chapter first.");
-                                return;
-                              }
+                          <Link
+                            href={(() => {
+                              if (!formData.chapterId) return '#';
                               const params = new URLSearchParams({
                                 courseId: formData.courseId,
                                 yearId: formData.yearId,
@@ -498,14 +495,18 @@ export default function AddContentPage() {
                                 subjectName: subjects.find(s => s.id === formData.subjectId)?.name || '',
                                 chapterName: chapters.find(c => c.id === formData.chapterId)?.name || '',
                               });
-                              // Using window.location.href instead of router.push to force a hard navigation
-                              // and bypass any Next.js client-router bugs with query parameters on Vercel
-                              window.location.href = `/admin/upload-notes?${params.toString()}`;
+                              return `/admin/upload-notes?${params.toString()}`;
+                            })()}
+                            onClick={(e) => {
+                              if (!formData.chapterId) {
+                                e.preventDefault();
+                                toast.error("Please select course, year, subject, and chapter first.");
+                              }
                             }}
                             className="text-sm text-primary hover:underline"
                           >
                             Don&apos;t have URL? Upload file →
-                          </button>
+                          </Link>
                         </div>
                       )}
                     </div>
