@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowLeft, Upload, FileText, Loader2, X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
@@ -20,7 +20,7 @@ interface UploadableFile {
   error?: string;
 }
 
-export default function UploadNotesPage() {
+function UploadNotesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -443,4 +443,12 @@ export default function UploadNotesPage() {
       </main>
     </div>
   );
-} 
+}
+
+export default function UploadNotesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>}>
+      <UploadNotesContent />
+    </Suspense>
+  );
+}
