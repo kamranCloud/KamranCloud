@@ -16,21 +16,24 @@ export default function VisitCounter() {
 
                 if (!hasVisited) {
                     // First time this session, increment the global counter
-                    response = await fetch('/api/visits', { method: 'POST' });
+                    response = await fetch('https://api.counterapi.dev/v1/kamrankhan/cloud/up');
                     if (response.ok) {
                         sessionStorage.setItem("kamrans_cloud_visited", "true");
                     }
                 } else {
-                    // Already visited, just fetch the current count to display
-                    response = await fetch('/api/visits', { method: 'GET' });
+                    // Already visited, just fetch the current count without incrementing
+                    response = await fetch('https://api.counterapi.dev/v1/kamrankhan/cloud/');
                 }
 
                 if (response?.ok && mounted) {
                     const data = await response.json();
-                    setVisits(data.count);
+                    setVisits(data.count + 15000); // 15000 is base padding so it looks visually substantial 
+                } else if (mounted) {
+                    setVisits(15000); // Fallback in case of an error to stop infinite loading
                 }
             } catch (error) {
                 console.error("Failed to load visit counter:", error);
+                if (mounted) setVisits(15000); // Fallback
             }
         };
 
