@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/select";
 import { collection, getDocs, doc, deleteDoc, updateDoc, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Course, Year, Subject, Chapter } from "@/types";
+import { Course, Year, Subject, Chapter, Content } from "@/types";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -287,8 +287,8 @@ export default function ManageStructurePage() {
     }
   };
 
-  const showInvalid = (errors: any) => {
-    const first = Object.values(errors ?? {})[0] as any;
+  const showInvalid = (errors: Record<string, { message?: string } | undefined>) => {
+    const first = Object.values(errors ?? {})[0];
     const msg = first?.message ?? 'Please check the form fields.';
     toast.error(msg);
   };
@@ -328,9 +328,10 @@ export default function ManageStructurePage() {
       toast.success("Course added successfully!");
       setCourses([...courses, { ...payload, id }]);
       handleCourseDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error adding course: ", error);
-      toast.error(`Failed to add course: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to add course: ${msg}`);
     }
   };
 
@@ -349,9 +350,10 @@ export default function ManageStructurePage() {
       toast.success("Year added successfully!");
       setYears([...years, { ...payload, id }]);
       handleYearDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error adding year: ", error);
-      toast.error(`Failed to add year: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to add year: ${msg}`);
     }
   };
 
@@ -374,9 +376,10 @@ export default function ManageStructurePage() {
       toast.success("Subject added successfully!");
       setSubjects([...subjects, { ...payload, id }]);
       handleSubjectDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error adding subject: ", error);
-      toast.error(`Failed to add subject: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to add subject: ${msg}`);
     }
   };
 
@@ -388,16 +391,17 @@ export default function ManageStructurePage() {
 
     try {
       const id = slugify(data.name);
-      const payload = { name: data.name.trim(), order: data.order, content: [] as any[] };
+      const payload = { name: data.name.trim(), order: data.order, content: [] as Content[] };
       const chapterRef = doc(db, "courses", selectedCourseId, "years", selectedYearId, "subjects", selectedSubjectId, "chapters", id);
       await setDoc(chapterRef, payload);
 
       toast.success("Chapter added successfully!");
       setChapters([...chapters, { ...payload, id }]);
       handleChapterDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error adding chapter: ", error);
-      toast.error(`Failed to add chapter: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to add chapter: ${msg}`);
     }
   };
 
@@ -417,9 +421,10 @@ export default function ManageStructurePage() {
       toast.success("Course updated successfully!");
       setCourses(courses.map(c => c.id === editingCourse.id ? { ...editingCourse, ...payload } : c));
       handleCourseDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating course: ", error);
-      toast.error(`Failed to update course: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to update course: ${msg}`);
     }
   };
 
@@ -433,9 +438,10 @@ export default function ManageStructurePage() {
       toast.success("Year updated successfully!");
       setYears(years.map(y => y.id === editingYear.id ? { ...editingYear, ...payload } : y));
       handleYearDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating year: ", error);
-      toast.error(`Failed to update year: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to update year: ${msg}`);
     }
   };
 
@@ -449,9 +455,10 @@ export default function ManageStructurePage() {
       toast.success("Subject updated successfully!");
       setSubjects(subjects.map(s => s.id === editingSubject.id ? { ...editingSubject, ...payload } : s));
       handleSubjectDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating subject: ", error);
-      toast.error(`Failed to update subject: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to update subject: ${msg}`);
     }
   };
 
@@ -465,9 +472,10 @@ export default function ManageStructurePage() {
       toast.success("Chapter updated successfully!");
       setChapters(chapters.map(c => c.id === editingChapter.id ? { ...editingChapter, ...payload } : c));
       handleChapterDialogChange(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating chapter: ", error);
-      toast.error(`Failed to update chapter: ${error?.message ?? 'unknown error'}`);
+      const msg = error instanceof Error ? error.message : 'unknown error';
+      toast.error(`Failed to update chapter: ${msg}`);
     }
   };
 
