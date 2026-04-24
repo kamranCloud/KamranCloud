@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { cn } from "@/lib/utils";
 import DeveloperProfile from "@/components/DeveloperProfile";
+import ThemeToggle from "@/components/ThemeToggle";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 
@@ -89,11 +91,15 @@ export default function RootLayout({
                       Dr. Kamran&apos;s Cloud
                     </span>
                   </Link>
-                  <DeveloperProfile />
+                  <div className="flex items-center gap-1">
+                    <ThemeToggle />
+                    <DeveloperProfile />
+                  </div>
                 </div>
               </header>
               <main>{children}</main>
               <Toaster />
+              <SonnerToaster richColors closeButton position="top-right" />
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>

@@ -53,27 +53,38 @@ import { toast } from "sonner";
 type CourseFromFirestore = Omit<Course, 'years'>;
 
 const courseSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  icon: z.string().min(1, "Icon is required"),
-  order: z.number().min(0, "Order must be a positive number"),
+  name: z.string().trim().min(1, "Name is required"),
+  description: z.string().optional().default(""),
+  icon: z.string().optional().default(""),
+  order: z.number({ invalid_type_error: "Order must be a number" }).min(0, "Order must be a positive number"),
 });
 
 const yearSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  order: z.number().min(0, "Order must be a positive number"),
+  name: z.string().trim().min(1, "Name is required"),
+  order: z.number({ invalid_type_error: "Order must be a number" }).min(0, "Order must be a positive number"),
 });
 
 const subjectSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  icon: z.string().min(1, "Icon is required"),
-  order: z.number().min(0, "Order must be a positive number"),
+  name: z.string().trim().min(1, "Name is required"),
+  icon: z.string().optional().default(""),
+  order: z.number({ invalid_type_error: "Order must be a number" }).min(0, "Order must be a positive number"),
 });
 
 const chapterSchema = z.object({
-  name: z.string().min(3, "Name must be at least 3 characters"),
-  order: z.number().min(0, "Order must be a positive number"),
+  name: z.string().trim().min(1, "Name is required"),
+  order: z.number({ invalid_type_error: "Order must be a number" }).min(0, "Order must be a positive number"),
 });
+
+const slugify = (name: string) => {
+  const base = name
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return base || `item-${Date.now()}`;
+};
 
 type CourseFormData = z.infer<typeof courseSchema>;
 type YearFormData = z.infer<typeof yearSchema>;
@@ -196,40 +207,57 @@ export default function ManageStructurePage() {
   }, [activeTab, selectedCourseId, selectedYearId, selectedSubjectId]);
 
   useEffect(() => {
+    if (!isCourseDialogOpen) return;
     if (editingCourse) {
-      courseForm.reset(editingCourse);
+      courseForm.reset({
+        name: editingCourse.name ?? '',
+        description: editingCourse.description ?? '',
+        icon: editingCourse.icon ?? '',
+        order: editingCourse.order ?? 0,
+      });
     } else {
       const nextOrder = courses.length > 0 ? Math.max(...courses.map(c => c.order ?? 0)) + 1 : 1;
       courseForm.reset({ name: '', description: '', icon: '', order: nextOrder });
     }
-  }, [editingCourse, courses, courseForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingCourse, isCourseDialogOpen]);
 
   useEffect(() => {
+    if (!isYearDialogOpen) return;
     if (editingYear) {
-      yearForm.reset(editingYear);
+      yearForm.reset({ name: editingYear.name ?? '', order: editingYear.order ?? 0 });
     } else {
       const nextOrder = years.length > 0 ? Math.max(...years.map(y => y.order ?? 0)) + 1 : 1;
       yearForm.reset({ name: '', order: nextOrder });
     }
-  }, [editingYear, years, yearForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingYear, isYearDialogOpen]);
 
   useEffect(() => {
+    if (!isSubjectDialogOpen) return;
     if (editingSubject) {
-      subjectForm.reset(editingSubject);
+      subjectForm.reset({
+        name: editingSubject.name ?? '',
+        icon: editingSubject.icon ?? '',
+        order: editingSubject.order ?? 0,
+      });
     } else {
       const nextOrder = subjects.length > 0 ? Math.max(...subjects.map(s => s.order ?? 0)) + 1 : 1;
       subjectForm.reset({ name: '', icon: '', order: nextOrder });
     }
-  }, [editingSubject, subjects, subjectForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingSubject, isSubjectDialogOpen]);
 
   useEffect(() => {
+    if (!isChapterDialogOpen) return;
     if (editingChapter) {
-      chapterForm.reset(editingChapter);
+      chapterForm.reset({ name: editingChapter.name ?? '', order: editingChapter.order ?? 0 });
     } else {
       const nextOrder = chapters.length > 0 ? Math.max(...chapters.map(c => c.order ?? 0)) + 1 : 1;
       chapterForm.reset({ name: '', order: nextOrder });
     }
-  }, [editingChapter, chapters, chapterForm]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingChapter, isChapterDialogOpen]);
 
   const handleCourseDialogChange = (open: boolean) => {
     setIsCourseDialogOpen(open);
@@ -259,50 +287,50 @@ export default function ManageStructurePage() {
     }
   };
 
-  const onCourseSubmit = courseForm.handleSubmit((data) => {
-    if (editingCourse) {
-      handleUpdateCourse(data);
-    } else {
-      handleAddCourse(data);
-    }
-  });
+  const showInvalid = (errors: any) => {
+    const first = Object.values(errors ?? {})[0] as any;
+    const msg = first?.message ?? 'Please check the form fields.';
+    toast.error(msg);
+  };
 
-  const onYearSubmit = yearForm.handleSubmit((data) => {
-    if (editingYear) {
-      handleUpdateYear(data);
-    } else {
-      handleAddYear(data);
-    }
-  });
+  const onCourseSubmit = courseForm.handleSubmit(
+    (data) => (editingCourse ? handleUpdateCourse(data) : handleAddCourse(data)),
+    showInvalid
+  );
 
-  const onSubjectSubmit = subjectForm.handleSubmit((data) => {
-    if (editingSubject) {
-      handleUpdateSubject(data);
-    } else {
-      handleAddSubject(data);
-    }
-  });
+  const onYearSubmit = yearForm.handleSubmit(
+    (data) => (editingYear ? handleUpdateYear(data) : handleAddYear(data)),
+    showInvalid
+  );
 
-  const onChapterSubmit = chapterForm.handleSubmit((data) => {
-    if (editingChapter) {
-      handleUpdateChapter(data);
-    } else {
-      handleAddChapter(data);
-    }
-  });
+  const onSubjectSubmit = subjectForm.handleSubmit(
+    (data) => (editingSubject ? handleUpdateSubject(data) : handleAddSubject(data)),
+    showInvalid
+  );
+
+  const onChapterSubmit = chapterForm.handleSubmit(
+    (data) => (editingChapter ? handleUpdateChapter(data) : handleAddChapter(data)),
+    showInvalid
+  );
 
   const handleAddCourse = async (data: CourseFormData) => {
     try {
-      const id = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const id = slugify(data.name);
+      const payload = {
+        name: data.name.trim(),
+        description: data.description ?? '',
+        icon: data.icon ?? '',
+        order: data.order,
+      };
       const courseRef = doc(db, "courses", id);
-      await setDoc(courseRef, data);
-      
+      await setDoc(courseRef, payload);
+
       toast.success("Course added successfully!");
-      setCourses([...courses, { ...data, id }]);
+      setCourses([...courses, { ...payload, id }]);
       handleCourseDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding course: ", error);
-      toast.error("Failed to add course.");
+      toast.error(`Failed to add course: ${error?.message ?? 'unknown error'}`);
     }
   };
 
@@ -313,16 +341,17 @@ export default function ManageStructurePage() {
     }
 
     try {
-      const id = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const id = slugify(data.name);
+      const payload = { name: data.name.trim(), order: data.order };
       const yearRef = doc(db, "courses", selectedCourseId, "years", id);
-      await setDoc(yearRef, data);
+      await setDoc(yearRef, payload);
 
       toast.success("Year added successfully!");
-      setYears([...years, { ...data, id }]);
+      setYears([...years, { ...payload, id }]);
       handleYearDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding year: ", error);
-      toast.error("Failed to add year.");
+      toast.error(`Failed to add year: ${error?.message ?? 'unknown error'}`);
     }
   };
 
@@ -333,16 +362,21 @@ export default function ManageStructurePage() {
     }
 
     try {
-      const id = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const id = slugify(data.name);
+      const payload = {
+        name: data.name.trim(),
+        icon: data.icon ?? '',
+        order: data.order,
+      };
       const subjectRef = doc(db, "courses", selectedCourseId, "years", selectedYearId, "subjects", id);
-      await setDoc(subjectRef, data);
+      await setDoc(subjectRef, payload);
 
       toast.success("Subject added successfully!");
-      setSubjects([...subjects, { ...data, id }]);
+      setSubjects([...subjects, { ...payload, id }]);
       handleSubjectDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding subject: ", error);
-      toast.error("Failed to add subject.");
+      toast.error(`Failed to add subject: ${error?.message ?? 'unknown error'}`);
     }
   };
 
@@ -353,16 +387,17 @@ export default function ManageStructurePage() {
     }
 
     try {
-      const id = data.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      const id = slugify(data.name);
+      const payload = { name: data.name.trim(), order: data.order, content: [] as any[] };
       const chapterRef = doc(db, "courses", selectedCourseId, "years", selectedYearId, "subjects", selectedSubjectId, "chapters", id);
-      await setDoc(chapterRef, { ...data, content: [] });
+      await setDoc(chapterRef, payload);
 
       toast.success("Chapter added successfully!");
-      setChapters([...chapters, { ...data, id, content: [] }]);
+      setChapters([...chapters, { ...payload, id }]);
       handleChapterDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding chapter: ", error);
-      toast.error("Failed to add chapter.");
+      toast.error(`Failed to add chapter: ${error?.message ?? 'unknown error'}`);
     }
   };
 
@@ -370,60 +405,69 @@ export default function ManageStructurePage() {
   const handleUpdateCourse = async (data: CourseFormData) => {
     if (!editingCourse) return;
     try {
+      const payload = {
+        name: data.name.trim(),
+        description: data.description ?? '',
+        icon: data.icon ?? '',
+        order: data.order,
+      };
       const courseRef = doc(db, "courses", editingCourse.id);
-      await updateDoc(courseRef, data);
-      
+      await updateDoc(courseRef, payload);
+
       toast.success("Course updated successfully!");
-      setCourses(courses.map(c => c.id === editingCourse.id ? { ...editingCourse, ...data } : c));
+      setCourses(courses.map(c => c.id === editingCourse.id ? { ...editingCourse, ...payload } : c));
       handleCourseDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating course: ", error);
-      toast.error("Failed to update course.");
+      toast.error(`Failed to update course: ${error?.message ?? 'unknown error'}`);
     }
   };
 
   const handleUpdateYear = async (data: YearFormData) => {
     if (!editingYear || !selectedCourseId) return;
     try {
+      const payload = { name: data.name.trim(), order: data.order };
       const yearRef = doc(db, "courses", selectedCourseId, "years", editingYear.id);
-      await updateDoc(yearRef, data);
-      
+      await updateDoc(yearRef, payload);
+
       toast.success("Year updated successfully!");
-      setYears(years.map(y => y.id === editingYear.id ? { ...editingYear, ...data } : y));
+      setYears(years.map(y => y.id === editingYear.id ? { ...editingYear, ...payload } : y));
       handleYearDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating year: ", error);
-      toast.error("Failed to update year.");
+      toast.error(`Failed to update year: ${error?.message ?? 'unknown error'}`);
     }
   };
 
   const handleUpdateSubject = async (data: SubjectFormData) => {
     if (!editingSubject || !selectedCourseId || !selectedYearId) return;
     try {
+      const payload = { name: data.name.trim(), icon: data.icon ?? '', order: data.order };
       const subjectRef = doc(db, "courses", selectedCourseId, "years", selectedYearId, "subjects", editingSubject.id);
-      await updateDoc(subjectRef, data);
-      
+      await updateDoc(subjectRef, payload);
+
       toast.success("Subject updated successfully!");
-      setSubjects(subjects.map(s => s.id === editingSubject.id ? { ...editingSubject, ...data } : s));
+      setSubjects(subjects.map(s => s.id === editingSubject.id ? { ...editingSubject, ...payload } : s));
       handleSubjectDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating subject: ", error);
-      toast.error("Failed to update subject.");
+      toast.error(`Failed to update subject: ${error?.message ?? 'unknown error'}`);
     }
   };
 
   const handleUpdateChapter = async (data: ChapterFormData) => {
     if (!editingChapter || !selectedCourseId || !selectedYearId || !selectedSubjectId) return;
     try {
+      const payload = { name: data.name.trim(), order: data.order };
       const chapterRef = doc(db, "courses", selectedCourseId, "years", selectedYearId, "subjects", selectedSubjectId, "chapters", editingChapter.id);
-      await updateDoc(chapterRef, data);
-      
+      await updateDoc(chapterRef, payload);
+
       toast.success("Chapter updated successfully!");
-      setChapters(chapters.map(c => c.id === editingChapter.id ? { ...editingChapter, ...data } : c));
+      setChapters(chapters.map(c => c.id === editingChapter.id ? { ...editingChapter, ...payload } : c));
       handleChapterDialogChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating chapter: ", error);
-      toast.error("Failed to update chapter.");
+      toast.error(`Failed to update chapter: ${error?.message ?? 'unknown error'}`);
     }
   };
 
@@ -508,8 +552,8 @@ export default function ManageStructurePage() {
                         {courseForm.formState.errors.description && <p className="text-red-500 text-sm">{courseForm.formState.errors.description.message}</p>}
                       </div>
                       <div>
-                        <Label htmlFor="icon">Icon</Label>
-                        <Input id="icon" {...courseForm.register("icon")} />
+                        <Label htmlFor="icon">Icon (emoji, optional)</Label>
+                        <Input id="icon" placeholder="e.g. 📚" {...courseForm.register("icon")} />
                         {courseForm.formState.errors.icon && <p className="text-red-500 text-sm">{courseForm.formState.errors.icon.message}</p>}
                       </div>
                       <div>
@@ -739,8 +783,8 @@ export default function ManageStructurePage() {
                         {subjectForm.formState.errors.name && <p className="text-red-500 text-sm">{subjectForm.formState.errors.name.message}</p>}
                       </div>
                       <div>
-                        <Label htmlFor="subjectIcon">Icon</Label>
-                        <Input id="subjectIcon" {...subjectForm.register("icon")} />
+                        <Label htmlFor="subjectIcon">Icon (emoji, optional)</Label>
+                        <Input id="subjectIcon" placeholder="e.g. 🧮" {...subjectForm.register("icon")} />
                         {subjectForm.formState.errors.icon && <p className="text-red-500 text-sm">{subjectForm.formState.errors.icon.message}</p>}
                       </div>
                     </div>
